@@ -26,7 +26,7 @@ npx cypress open
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-Vercel application running at https://expedia.vercel.app/
+Vercel application running at https://my-expedia.vercel.app/
 
 ### TODO
 
