@@ -61,7 +61,7 @@ const Home: NextPage = () => {
             </div>
           </div>
         </form>
-        <div className='flex flex-row w-full h-full p-8'>
+        <div className='flex flex-row justify-center w-full h-full p-8'>
           {suggestedHotels.map((item) => (
             <div
               className='flex flex-col bg-white rounded-lg mb-3 hover:cursor-pointer px-2'
