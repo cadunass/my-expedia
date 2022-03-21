@@ -1,15 +1,18 @@
 import type { NextPage } from 'next';
 import React from 'react';
+import Router from 'next/router';
+import Image from 'next/image';
+import dayjs from 'dayjs';
 import Layout from '../components/Layout';
 import Datepicker from '../components/Datepicker';
-import Router from 'next/router';
 import { mockedHotels } from '../utils';
 
 const Home: NextPage = () => {
-  const shuffled = mockedHotels.sort(() => 0.5 - Math.random());
-  let selected = shuffled.slice(0, 9);
+  const randomHotels = mockedHotels.sort(() => 0.5 - Math.random());
+  const suggestedHotels = randomHotels
+    .filter((hotel) => hotel.booked?.length)
+    ?.slice(0, 3);
 
-  console.log(selected);
   return (
     <Layout>
       <main className='p-0 m-0 box-border'>
@@ -27,8 +30,6 @@ const Home: NextPage = () => {
             const checkin = target.checkin.value;
             const checkout = target.checkout.value;
 
-            console.log(place, checkin, checkout);
-
             Router.push({
               pathname: '/results',
               query: { place, checkin, checkout },
@@ -44,8 +45,11 @@ const Home: NextPage = () => {
                 type='text'
                 placeholder='Going to'
               />
-              <Datepicker name='checkin' />
-              <Datepicker name='checkout' />
+              <Datepicker name='checkin' value={dayjs().format('YYYY-MM-DD')} />
+              <Datepicker
+                name='checkout'
+                value={dayjs().add(1, 'd').format('YYYY-MM-DD')}
+              />
             </div>
             <div className='mt-4 flex justify-center'>
               <button
@@ -57,6 +61,28 @@ const Home: NextPage = () => {
             </div>
           </div>
         </form>
+        <div className='flex flex-row w-full h-full p-8'>
+          {suggestedHotels.map((item) => (
+            <div
+              className='flex flex-col bg-white rounded-lg mb-3 hover:cursor-pointer px-2'
+              onClick={() => alert('TODO')}
+              key={item.id}
+            >
+              <Image
+                src={item.image as string}
+                alt={item.alt as string}
+                width={384}
+                height={256}
+              />
+              <div className='my-2 w-full'>
+                <div className='flex flex-col'>
+                  <h3 className='font-light'>{item.name}</h3>
+                  <span className='text-sm font-light'>{item.location}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </main>
     </Layout>
   );

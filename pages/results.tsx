@@ -1,32 +1,22 @@
 import { NextPage } from 'next';
-import Layout from '../components/Layout';
-import Router, { useRouter } from 'next/router';
-import { mockedHotels } from '../utils';
-import { Hotel } from '../interfaces';
 import Image from 'next/image';
+import Router, { useRouter } from 'next/router';
+import Layout from '../components/Layout';
+import { mockedHotels, popularFilters } from '../utils';
+import { Hotel } from '../interfaces';
 import Datepicker from '../components/Datepicker';
 
 const Results: NextPage = () => {
   const router = useRouter();
-  console.log(router.query);
   let { place, checkin, checkout } = router.query;
 
-  const shuffled = mockedHotels.filter(
+  const filteredHotels = mockedHotels.filter(
     (hotel: Hotel) =>
-      hotel.name?.includes(place as string) ||
-      hotel.title?.includes(place as string)
+      hotel.name?.includes(place as string) &&
+      !hotel.booked?.find((dayTaken) => dayTaken == checkin) &&
+      !hotel.booked?.find((dayTaken) => dayTaken == checkout)
   );
-  let selected = shuffled.slice(0, 10);
-
-  console.log(selected);
-
-  const popularFilters = [
-    { title: 'Hot tub', name: 'hot-tub' },
-    { title: 'Ingleses Beach', name: 'ingleses-beach' },
-    { title: 'Ocean view', name: 'ocean-view' },
-    { title: 'All inclusive', name: 'all-inclusive' },
-    { title: 'Spa', name: 'spa' },
-  ];
+  let hotelsAvailable = filteredHotels.slice(0, 10);
 
   return (
     <Layout>
@@ -43,8 +33,6 @@ const Results: NextPage = () => {
                   checkin: { value: string };
                   checkout: { value: string };
                 };
-
-                console.log(place, checkin, checkout);
 
                 Router.push({
                   pathname: '/results',
@@ -88,40 +76,40 @@ const Results: NextPage = () => {
             </div>
             <div className='flex flex-col w-full h-full ml-4'>
               <ol>
-                {selected.map((item) => {
-                  if (!item.image_direct_url) {
-                    item.image_direct_url =
-                      'https://upload.wikimedia.org/wikipedia/commons/5/5b/Tadoussac_-_Hotel_%281%29.jpg';
-                  }
-
-                  return (
+                {hotelsAvailable.length ? (
+                  hotelsAvailable.map((item) => (
                     <li key={item.id}>
                       <div
                         className='flex flex-row bg-white rounded-lg mb-3 hover:cursor-pointer'
                         onClick={() => alert('TODO')}
                       >
                         <Image
-                          src={item.image_direct_url as string}
+                          src={item.image as string}
                           alt={item.alt as string}
                           width={300}
                           height={160}
                         />
-                        <div className='mx-4 my-2 w-full h-full'>
+                        <div className='mx-4 my-2 w-full relative'>
                           <div className='flex flex-col'>
-                            <h3 className='font-bold'>{item.title}</h3>
-                            <span>{item.name}</span>
+                            <h3 className='font-bold'>{item.name}</h3>
                             <span className='text-xs font-light'>
-                              {item.hours}
+                              {item.location}
                             </span>
                           </div>
-                          <span className='flex flex-row justify-end font-medium'>
+                          <span className='flex flex-row justify-end font-medium absolute bottom-0 right-0'>
                             {item.price}
                           </span>
                         </div>
                       </div>
                     </li>
-                  );
-                })}
+                  ))
+                ) : (
+                  <div className='w-full h-full flex flex-row justify-center'>
+                    <div className='flex flex-col justify-center font-bold'>
+                      No hotels found!
+                    </div>
+                  </div>
+                )}
               </ol>
             </div>
           </div>
