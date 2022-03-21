@@ -1,17 +1,36 @@
 import type { NextPage } from 'next';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Router from 'next/router';
 import Image from 'next/image';
 import dayjs from 'dayjs';
 import Layout from '../components/Layout';
 import Datepicker from '../components/Datepicker';
-import { mockedHotels } from '../utils';
+import { Hotel } from '../interfaces';
 
 const Home: NextPage = () => {
-  const randomHotels = mockedHotels.sort(() => 0.5 - Math.random());
-  const suggestedHotels = randomHotels
-    .filter((hotel) => hotel.booked?.length)
-    ?.slice(0, 3);
+  const [suggestedHotels, setSuggestedHotels] = useState<Hotel[]>([]);
+
+  useEffect(() => {
+    const getHotels = async () => {
+      const response = await fetch('/api/hotels');
+      const data = await response.json();
+      const randomHotels = data.sort(() => 0.5 - Math.random());
+      const hotels = randomHotels
+        .filter((hotel: Hotel) => hotel.booked?.length)
+        ?.slice(0, 3);
+
+      setSuggestedHotels(hotels);
+    };
+
+    getHotels();
+  }, []);
+
+  if (!suggestedHotels.length)
+    return (
+      <Layout>
+        <div className='flex justify-center'>loading...</div>
+      </Layout>
+    );
 
   return (
     <Layout>

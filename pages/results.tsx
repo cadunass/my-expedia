@@ -1,8 +1,9 @@
+import { useEffect, useState } from 'react';
 import { NextPage } from 'next';
 import Image from 'next/image';
 import Router, { useRouter } from 'next/router';
 import Layout from '../components/Layout';
-import { mockedHotels, popularFilters } from '../utils';
+import { popularFilters } from '../utils';
 import { Hotel } from '../interfaces';
 import Datepicker from '../components/Datepicker';
 
@@ -10,13 +11,25 @@ const Results: NextPage = () => {
   const router = useRouter();
   let { place, checkin, checkout } = router.query;
 
-  const filteredHotels = mockedHotels.filter(
-    (hotel: Hotel) =>
-      hotel.name?.includes(place as string) &&
-      !hotel.booked?.find((dayTaken) => dayTaken == checkin) &&
-      !hotel.booked?.find((dayTaken) => dayTaken == checkout)
-  );
-  let hotelsAvailable = filteredHotels.slice(0, 10);
+  const [availableHotels, setAvailableHotels] = useState<Hotel[]>([]);
+
+  useEffect(() => {
+    const getHotels = async () => {
+      const response = await fetch('/api/hotels');
+      const data = await response.json();
+
+      const hotels = data.filter(
+        (hotel: Hotel) =>
+          hotel.name?.includes(place as string) &&
+          !hotel.booked?.find((dayTaken) => dayTaken == checkin) &&
+          !hotel.booked?.find((dayTaken) => dayTaken == checkout)
+      );
+
+      setAvailableHotels(hotels);
+    };
+
+    getHotels();
+  }, [checkin, checkout, place]);
 
   return (
     <Layout>
@@ -76,8 +89,8 @@ const Results: NextPage = () => {
             </div>
             <div className='flex flex-col w-full h-full ml-4'>
               <ol>
-                {hotelsAvailable.length ? (
-                  hotelsAvailable.map((item) => (
+                {availableHotels.length ? (
+                  availableHotels.map((item) => (
                     <li key={item.id}>
                       <div
                         className='flex flex-row bg-white rounded-lg mb-3 hover:cursor-pointer'
